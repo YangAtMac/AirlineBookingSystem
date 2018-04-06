@@ -197,6 +197,7 @@ void printReservation(vector<UserReservation> uReservations)
 	if (uReservations.size() > 0) {
 	cout << setw(7) << right << "ID";
 	cout << setw(19) << right << "Seats Number";
+	cout << setw(15) << right << "Flight ID";
 	cout << setw(16) << right << "Depart City";
 	cout << setw(16) << right << "Destination";
 	cout << setw(14) << right << "Flight No";
@@ -206,6 +207,7 @@ void printReservation(vector<UserReservation> uReservations)
 	{
 		cout << setw(6) << right << "[" << r.reserve_id << "]";
 		cout << setw(14) << right << r.seat_num;
+		cout << setw(14) << right << r.flight->GetId();
 		cout << setw(16) << right << r.flight->GetDepartCity();
 		cout << setw(16) << right << r.flight->GetDestination();
 		cout << setw(17) << right << r.flight->GetFlightNo();
