@@ -2,19 +2,9 @@
 #include "sqlite3.h"
 #include <string>
 #include <vector>
-
 #include "Flight.h"
-#include "User.h"
-#include "Seat.h"
-#include "Database.h"
-#include "FinalProject.h"
-#include "Reservation.h"
 
-
-//using namespace std;
-
-class Flight;
-struct UserReservation;
+using std::string;
 
 class User
 {
@@ -33,22 +23,16 @@ public:
 	static std::vector<User> All();
 	void Create();
 	void Update();
-	void Delete();
-	vector<Flight> GetFlights();
+	void Delete();	
 	int GetId();
-	std::string GetUsername();
+	string GetUsername();
 	string GetHashedPassword();
 	void SetPassword(std::string p);
 	std::string GetRole();
 	void SetRole(std::string r);
 	bool Authenticate();
-	void reserveFlight(int flight_id, int user_id,  string seat_num);
-	void cancelFlight(int flight_id);
+
+	vector<Flight> flights;
 	void reserveFlight();
-	void reserveSeat(Flight f);
-	
-	vector<UserReservation> GetUserReservation(int userId);
-	vector<Seat> reserveSeat(Flight f, vector<Seat> seats);
-	void showSeatMap( Flight f, vector<Seat> seats );
 };
 

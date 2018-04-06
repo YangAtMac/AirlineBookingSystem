@@ -1,15 +1,11 @@
 #include "stdafx.h"
 #include "User.h"
-#include "Flight.h"
 #include <iostream>
 
 using namespace std;
 
 static int selectCallback(void *ptr, int count, char **data, char **columns);
-static int flightSelectCallback(void *ptr, int count, char **data, char **columns);
-static int userFlightSelectCb(void *ptr, int count, char **data, char **columns);
 vector<User> Select(string sql);
-bool isSeatValid(string seatNum, vector<Seat> seats);
 
 User::User(void)
 {
@@ -27,7 +23,6 @@ User::User(string u, string p, string r)
 {
 	username = u;
 	password = p;
-	hashed_password = p;
 	role = r;
 }
 
@@ -37,258 +32,30 @@ User::~User(void)
 
 User User::Find(int id)
 {
-	string sql = "SELECT * from Users WHERE id=" + to_string(id) + ";";
+	string sql = "SELECT * from Users WHERE user_id=" + to_string(id) + ";";
 	vector<User> users = Select(sql);
+	User user;
 	if(users.size() == 0)
 	{
-		User user;
 		return user;
 	}
-	User user = User(users[0].GetId(), users[0].GetUsername(), users[0].GetHashedPassword(), users[0].GetRole());
+	user = User(users[0].GetId(), users[0].GetUsername(), users[0].GetHashedPassword(), users[0].GetRole());
 	return user;
 };
 std::vector<User> User::All()
 {
 	string sql = "SELECT * from Users;";
-	std::vector<User> users = Select(sql);
-	return users;
+	return Select(sql);
 };
 void User::Create()
 {
-	int rc;
-	char *error;
-	sqlite3 *db = Database::openDb();
-	string sql = "INSERT INTO Users (username, hashed_password, role) VALUES('" + username + "', '" + hashed_password + "', '" + role + "');";
-	const char *sqlInsert = sql.c_str();
-	rc = sqlite3_exec(db, sqlInsert, NULL, NULL, &error);
-   if( rc != SQLITE_OK ) {
-		fprintf(stderr, "SQL error: %s\n", error);
-		sqlite3_free(error);
-		Database::closeDb(db);
-	} else {
-		fprintf(stdout, "User created successfully\n");
-		Database::closeDb(db);
-		string sql = "SELECT * from Users WHERE username='" + username + "';";
-		vector<User> users = Select(sql);
-		id = users[0].id;
-	}
 };
 void User::Update()
 {
-	int rc;
-	char *error;
-	sqlite3 *db = Database::openDb();
-	string sql = "UPDATE Users SET username='" + username +  "', hashed_password='" + hashed_password +  "', role='" + role +  "';";
-	const char *sqlUpdate = sql.c_str();
-	rc = sqlite3_exec(db, sqlUpdate, NULL, NULL, &error);
-   if( rc != SQLITE_OK ) {
-		fprintf(stderr, "SQL error: %s\n", error);
-		sqlite3_free(error);
-		Database::closeDb(db);
-	} else {
-		fprintf(stdout, "User updated successfully\n");
-		Database::closeDb(db);
-	}
 };
 void User::Delete()
 {
-	int rc;
-	char *error;
-	sqlite3 *db = Database::openDb();
-	string sql = "DELETE FROM Users WHERE id=" + to_string(id) + ";";
-	const char *sqlUpdate = sql.c_str();
-	rc = sqlite3_exec(db, sqlUpdate, NULL, NULL, &error);
-   if( rc != SQLITE_OK ) {
-		fprintf(stderr, "SQL error: %s\n", error);
-		sqlite3_free(error);
-		Database::closeDb(db);
-	} else {
-		fprintf(stdout, "User updated successfully\n");
-		Database::closeDb(db);
-	}
-};
-
-vector<Flight> User::GetFlights()
-{
-  vector<Flight> flights;
-  sqlite3 *db = Database::openDb();
-	char *zErrMsg = 0;
-	int rc;
-
-	string sql = "SELECT f.id,	depart_city, destination, flight_no, depart_time, arrival_time, total_seat,	fare, plane_model  FROM RESERVATION fu INNER JOIN FLIGHTS f ON f.id = fu.flight_id WHERE fu.user_id = '" + to_string(id) + "';";
-	int n = sql.length();
-	const char *cstr = sql.c_str();
-
-	/* Execute SQL statement */
-	rc = sqlite3_exec(db, cstr, flightSelectCallback, &flights, &zErrMsg);
-
-	if( rc != SQLITE_OK ) {
-		fprintf(stderr, "SQL error: %s\n", zErrMsg);
-		sqlite3_free(zErrMsg);
-		Database::closeDb(db);
-		return flights;
-	} else {
-		fprintf(stdout, "Operation done successfully\n");
-		Database::closeDb(db);
-		return flights;
-	}
-};
-
-vector<UserReservation>  User::GetUserReservation(int userId)
-{
-	vector<UserReservation> userFlights;
-	sqlite3 *db = Database::openDb();
-	char *zErrMsg = 0;
-	int rc;
-
-	string sql = "SELECT * FROM RESERVATION fu INNER JOIN FLIGHTS f ON f.id = fu.flight_id WHERE fu.user_id = '" + to_string(userId) + "';";
-	//string sql = "SELECT fu.id, fu.seat_no, user_id, user.username, user.role, f.depart_city, destination, depart_time, arrival_time, flight_id, flight_no" \
-	//			"FROM FLIGHT_USER fu INNER JOIN FLIGHTS f ON f.id = fu.flight_id INNER JOIN USERS user ON user.id = fu.user_id WHERE fu.user_id = '" + to_string(userId) + "';";
-
-	int n = sql.length();
-	const char *cstr = sql.c_str();
-
-	/* Execute SQL statement */
-	rc = sqlite3_exec(db, cstr, userFlightSelectCb, &userFlights, &zErrMsg);
-
-	if( rc != SQLITE_OK ) {
-		fprintf(stderr, "SQL error: %s\n", zErrMsg);
-		sqlite3_free(zErrMsg);
-	} else {
-		fprintf(stdout, "Operation done successfully\n");
-	}
-	Database::closeDb(db);
-	return userFlights;
-};
-
-static int flightSelectCallback(void *ptr, int count, char **data, char **columns)
-{
-	if(count == 0)
-	{
-		return 0;
-	}
-
-	std::vector<Flight>* flights = static_cast<std::vector<Flight>*>(ptr);
-
-	int id;
-	string depart_city;
-	string destination;
-	string flight_no;
-	string depart_time;
-	string arrival_time;
-	int total_seat;
-	double fare;
-	string plane_model;
-	for(int i = 0; i<count; i++){
-		string colName(columns[i]);
-
-		if(colName == "depart_city")
-		{
-			depart_city = data[i];
-		} else if(colName == "destination") {
-			destination = data[i];
-		} else if(colName == "flight_no")
-		{
-			flight_no = data[i];
-		} else if(colName == "depart_time")
-		{
-			depart_time = data[i];
-		} else if(colName == "plane_model")
-		{
-			plane_model = data[i];
-		} else if(colName == "arrival_time")
-		{
-			arrival_time = data[i];
-		} else if(colName == "total_seat")
-		{
-			total_seat = atoi(data[i]);
-		} else if(colName == "fare")
-		{
-			fare = atof(data[i]);
-		} else if(colName == "id")
-		{
-			id = atoi(data[i]);
-		}
-	}
-
-	Flight flight(id, depart_city, destination, flight_no, depart_time, arrival_time, total_seat, fare, plane_model);
-	flights->push_back(flight);
-	return 0;
-}
-
-static int userFlightSelectCb(void *ptr, int count, char **data, char **columns)
-{
-	if(count == 0)
-	{
-		return 0;
-	}
-
-	std::vector<UserReservation>* userFlights = static_cast<std::vector<UserReservation>*>(ptr);
-
-	int id;
-	int reserve_id;
-	int userId;
-	int flight_id;
-	string seat_num;
-	string depart_city;
-	string destination;
-	string flight_no;
-	string depart_time;
-	string arrival_time;
-	int total_seat;
-	double fare;
-	string plane_model;
-	for(int i = 0; i < count; i++){
-		string colName(columns[i]);
-		if (colName == "reserve_id") {
-			 reserve_id = atoi(data[i]);
-		} else if(colName == "id") {
-			 id = atoi(data[i]);
-		} else if (colName == "seat_no") {
-			seat_num = data[i];
-		} else if(colName == "user_id"){
-			userId = atoi(data[i]);
-		} else if(colName == "flight_id"){
-			flight_id = atoi(data[i]);
-		} else if(colName == "depart_city"){
-			depart_city = data[i];
-		} else if(colName == "destination") {
-			destination = data[i];
-		} else if(colName == "flight_no") {
-			flight_no = data[i];
-		} else if(colName == "depart_time") {
-			depart_time = data[i];
-		} else if(colName == "plane_model") {
-			plane_model = data[i];
-		} else if(colName == "arrival_time") {
-			arrival_time = data[i];
-		} else if(colName == "total_seat") {
-			total_seat = atoi(data[i]);
-		} else if(colName == "fare") {
-			fare = atof(data[i]);
-		} 
-	}
-
-	
-	//Flight flight(id, depart_city, destination, flight_no, depart_time, arrival_time, total_seat, fare, plane_model);
-	Flight *flight = new Flight();
-	flight->SetId(id);
-	flight->SetDepartCity(depart_city);
-	flight->SetDestination(destination);
-	flight->SetFlightNo(flight_no);
-	flight->SetDepartTime(depart_time);
-	flight->SetArrivalTime(arrival_time);
-	flight->SetTotalSeat(total_seat);
-	flight->SetFare(fare);
-	flight->SetPlaneModel(plane_model);
-	UserReservation uReservation;
-	uReservation.reserve_id = reserve_id;
-	uReservation.flight = flight;
-	uReservation.userId = userId;
-	uReservation.seat_num = seat_num;
-	userFlights->push_back(uReservation);
-	return 0;
-}
+};	
 
 int User::GetId()
 {
@@ -304,7 +71,6 @@ string User::GetHashedPassword()
 }
 void User::SetPassword(string p)
 {
-	password = p;
 };
 std::string User::GetRole()
 {
@@ -312,15 +78,48 @@ std::string User::GetRole()
 };
 void User::SetRole(string r)
 {
-	role = r;
 };
 bool User::Authenticate()
 {
 	return true;
 };
 
+void User::reserveFlight()
+{
+	int selectId;
+	bool bookIt;
+	char ans;
+	vector<Flight> flights;
+	Flight flight, f;
+	flights = flight.getFlights();
+	
+	// validate input - SQL injection
+	do {
+		cout << "Please enter flight ID you want to reserve: ";
+		cin >> selectId;
+	}
+	while ( (selectId < 0 ) || (selectId > flights.size()));
+
+	f = flight.getFlight(selectId);
+	cout << "From: " << f.depart_city << endl;
+	cout << "To: " << f.destination << endl;
+	cout << "Depart time: " << f.depart_time << endl;
+	cout << "Landing time: " << f.arrival_time << endl;
+	cout << "Flight No: " << f.flight_no << endl;
+	cout << "Flight fare: " << f.fare << endl;
+	do {
+		cout << endl << "Are you sure you want to book this flight? [y/n]: ";
+		cin >> ans;
+	} while( !cin.fail() && toupper(ans) != 'Y' && toupper(ans) != 'N' );
+	bookIt = (toupper(ans)=='Y') ? true : false;
+		
+	if (bookIt) {
+		cout << endl << "Reserve and saved successful." << endl;
+		} 
+}
+
 static int selectCallback(void *ptr, int count, char **data, char **columns){
-	if(count == 0)
+	if(count == 0) 
 	{
 		return 0;
 	}
@@ -330,6 +129,7 @@ static int selectCallback(void *ptr, int count, char **data, char **columns){
 	string username, hashed_password, role;
 	int id;
 	for(int i = 0; i<count; i++){
+		cout << columns[i] << endl;
 		string colName(columns[i]);
 
 		if(colName == "username")
@@ -342,7 +142,7 @@ static int selectCallback(void *ptr, int count, char **data, char **columns){
 			role = data[i];
 		} else if(colName == "id")
 		{
-			id = atoi(data[i]);
+			id = (int)data[i];
 		}
 	}
 
@@ -353,13 +153,22 @@ static int selectCallback(void *ptr, int count, char **data, char **columns){
 
 vector<User> Select(string sql)
 {
-	vector<User> users;
-	cout << sql << endl;
-	sqlite3 *db = Database::openDb();
+	sqlite3 *db;
 	char *zErrMsg = 0;
 	int rc;
 	const char* data = "Callback function called";
 	User user;
+	std::vector<User> users;
+
+	/* Open database */
+	rc = sqlite3_open("FinalProject.db", &db);
+
+	if( rc ) {
+		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+		return users;
+	} else {
+		fprintf(stderr, "Opened database successfully\n");
+	}
 
 	int n = sql.length();
 	const char *cstr = sql.c_str();
@@ -370,96 +179,11 @@ vector<User> Select(string sql)
 	if( rc != SQLITE_OK ) {
 		fprintf(stderr, "SQL error: %s\n", zErrMsg);
 		sqlite3_free(zErrMsg);
-		Database::closeDb(db);
+		sqlite3_close(db);
 		return users;
 	} else {
-		//fprintf(stdout, "Operation done successfully\n");
-		Database::closeDb(db);
+		fprintf(stdout, "Operation done successfully\n");
+		sqlite3_close(db);
 		return users;
-	}
-}
-
-void User::reserveFlight(int flight_id, int user_id,  string seatNumber)
-{
-	Database db;
-	Reservation reservation;
-	reservation.flight_id = flight_id;
-	reservation.seat_num = seatNumber;
-	reservation.user_id = user_id;
-	//reserveSeat();
-	db.saveReservation(reservation);
-};
-
-void User::cancelFlight(int reservationId)
-{
-	Database db;
-	db.cancelReservation(reservationId);
-};
-
-void User::reserveSeat(Flight f)
-{
-	char answer;
-	bool resSeat;
-	do {
-		cout << endl << "Do you want to reserve your seat? [y/n]";
-		cin >> answer;
-	} while( !cin.fail() && toupper(answer) != 'Y' && toupper(answer) != 'N' );
-	resSeat = (toupper(answer)=='Y') ? true : false;
-	if (resSeat) {
-		vector<Seat> seats = f.getAllSeats();
- 		showSeatMap(f, seats);
-		reserveSeat(f, seats);
-	}
-}
-
-vector<Seat> User::reserveSeat(Flight f, vector<Seat> seats)
-{
-	string userAnswer;
-	do {
-		cout << "Please enter the seat number: ";
-		cin >> userAnswer;
-	} while (!isSeatValid(userAnswer, seats));
-	//TODO reserve seat
-	for ( vector<Seat>::iterator it = seats.begin(); it != seats.end(); ++it ){
-		if ( userAnswer == it->getSeatNumber() ) {
-			it->reserve();
-		} 
-	}
-	cout << "Your seat is reserved successfully. display again." << endl;
-	showSeatMap(f, seats);
-	return seats;
-}
-
-bool isSeatValid(string seatNum, vector<Seat> seats)
-{
-	bool isValid = false;
-	cout << "Your entry is: " << seatNum << endl;
-	for ( vector<Seat>::iterator it = seats.begin(); it != seats.end(); ++it ){
-		if ( seatNum == it->getSeatNumber() ) {
-			isValid = true;
-			// return index would be better.
-		} 
-	}
-	if (!isValid)
-			cout << "Your entry is invalid, please try again." <<endl;
-	return isValid;
-}
-
-void User::showSeatMap(Flight f, vector<Seat> seats )
-{ 
-    //system( "cls" );
-	cout << "Total seats: " << f.GetTotalSeat() << endl;;
-    cout << "*********     Welcome to seat reservation system     *********\n\n";
-
-	for ( vector<Seat>::iterator it = seats.begin(); it != seats.end(); ++it ) {
-		cout << " ";
-		if (it->isSeatAvailable()) {
-			cout << it->getSeatNumber() << "\t";
-		} else {
-			cout << "X\t";
-		}
-		if ( it->seatCol == 'G') {
-			cout << endl;
-		}
 	}
 }

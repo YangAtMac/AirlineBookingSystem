@@ -36,12 +36,6 @@
     <ClInclude Include="FinalProject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Seat.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Reservation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -57,12 +51,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Database.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Seat.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Reservation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
