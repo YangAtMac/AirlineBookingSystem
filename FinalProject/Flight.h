@@ -4,31 +4,59 @@
 #include <string>
 #include <vector>
 
-#include "FinalProject.h"
+#include "Seat.h"
+#include "User.h"
+#include "Reservation.h"
+#include "Database.h"
 
-using namespace std; 
+
+class User;
 
 class Flight
 {
-	
+private:
+	int id;
+	std::string depart_city;
+	std::string destination;
+	std::string flight_no;
+	std::string depart_time;
+	std::string arrival_time;
+	int total_seat;
+	double fare;
+	std::string plane_model;
+	int MAX_SEAT_PER_ROW;
 
 public:
 	Flight(void);
-	Flight(int id, std::string depart_city, std::string destination, std::string flight_no, 
+	Flight(int i, std::string depart_city, std::string destination, std::string flight_no,
+		std::string depart_time, std::string arrival_time, int total_seat, double fare, std::string plane_model);
+	Flight(std::string depart_city, std::string destination, std::string flight_no,
 		std::string depart_time, std::string arrival_time, int total_seat, double fare, std::string plane_model);
 	~Flight(void);
-	int id;
-	string depart_city;
-	string destination;
-	string flight_no; 
-	string depart_time;
-	string arrival_time; 
-	int total_seat; 
-	double fare; 
-	string plane_model;
-	
-	vector<Flight> display(const char *query);
+	void SetId( int Id){id = Id;};
+	static Flight Find(int id);
+	static std::vector<Flight> All();
+	void Create();
+	void Update();
+	void Delete();
+	vector<User> GetUsers();
+	int GetId();
+	std::string GetDepartCity();
+	void SetDepartCity(std::string d);
+	std::string GetDestination();
+	void SetDestination(std::string d);
+	std::string GetFlightNo();
+	void SetFlightNo(std::string f);
+	std::string GetDepartTime();
+	void SetDepartTime(std::string d);
+	std::string GetArrivalTime();
+	void SetArrivalTime(std::string a);
 	Flight getFlight(int id);
-	vector<Flight> Flight::getFlights();
+	int GetTotalSeat();
+	void SetTotalSeat(int i) {total_seat = i;};
+	void SetFare(int i) {fare = i;};
+	void SetPlaneModel(std::string model) { plane_model = model; };
+	double GetFare();
+	std::string GetPlaneModel();
+	std::vector<Seat> getAllSeats();
 };
-

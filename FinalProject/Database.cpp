@@ -3,6 +3,7 @@
 #include "Database.h"
 #include <string>
 
+
 using namespace std;
 
 Database::Database(void)
@@ -14,7 +15,7 @@ sqlite3* Database::openDb()
 {
 	sqlite3 *db;
 	// Open Database
-	cout << "Opening FinalProject.db ..." << endl;
+	//cout << "Opening FinalProject.db ..." << endl;
 	int rc = 0;
 	rc = sqlite3_open("FinalProject.db", &db);
 	if (rc)
@@ -24,7 +25,7 @@ sqlite3* Database::openDb()
 	}
 	else
 	{
-		cout << "Opened FinalProject.db." << endl << endl;
+		//cout << "Opened FinalProject.db." << endl << endl;
 	}
 	return db;
 }
@@ -70,7 +71,7 @@ int Database::initDB()
 	}
 
 	cout << "Creating FLIGHT_USER ..." << endl;
-	const char *sqlCreateFlightUserTable = "CREATE TABLE IF NOT EXISTS FLIGHTS (id INTEGER PRIMARY KEY, seat_no STRING, user_id INTEGER, flight_id INTEGER);";
+	const char *sqlCreateFlightUserTable = "CREATE TABLE IF NOT EXISTS FLIGHT_USER (id INTEGER PRIMARY KEY, seat_no STRING, user_id INTEGER, flight_id INTEGER);";
 	rc = sqlite3_exec(db, sqlCreateFlightUserTable, NULL, NULL, &error);
 	if (rc)
 	{
@@ -128,7 +129,7 @@ int Database::insertFlight()
 		"INSERT INTO FLIGHTS (depart_city, destination, flight_no, depart_time, arrival_time, total_seat, fare, plane_model) values ('HNL', 'CVG', 'DE056', '14:35', '23:45', '350', '2350.00', 'B777');"
 		"INSERT INTO FLIGHTS (depart_city, destination, flight_no, depart_time, arrival_time, total_seat, fare, plane_model) values ('CVG', 'HNL', 'DE057', '15:40', '21:55', '350', '2350.00', 'B777');"
 		"INSERT INTO FLIGHTS (depart_city, destination, flight_no, depart_time, arrival_time, total_seat, fare, plane_model) values ('JFK', 'YYZ', 'MU167', '11:15', '20:45', '350', '2250.00', 'B767');"
-		"INSERT INTO FLIGHTS (depart_city, destination, flight_no, depart_time, arrival_time, total_seat, fare, plane_model) values ('YYZ', 'JFK', 'MU168', '10:25', '18:59', '350', '2250.00', 'AB767');";
+		"INSERT INTO FLIGHTS (depart_city, destination, flight_no, depart_time, arrival_time, total_seat, fare, plane_model) values ('YYZ', 'JFK', 'MU168', '10:25', '18:59', '350', '2250.00', 'B767');";
 	rc = sqlite3_exec(db, sqlInsertFlight, NULL, NULL, &error);
 	if (rc)
 	{
@@ -179,6 +180,49 @@ void Database::getFlights()
             }    
         }
     }
+}
+
+/* this is debug function to modify DB*/
+void Database::debug()
+{
+	string sqlDebug = "INSERT INTO RESERVATION (seat_no, user_id, flight_id) VALUES('12B', 2, 12)";
+	/*
+	string sqlDebug  = "ALTER TABLE FLIGHT_USER RENAME TO RESERVATION";
+	string sqlDebug  = "ALTER TABLE FLIGHT_USER RENAME TO RESERVATION";
+	*/
+	sqlCommand(sqlDebug);
+}
+
+
+void Database::saveReservation( Reservation reservation)
+{
+	
+	string sqlSave = "INSERT INTO RESERVATION (seat_no, user_id, flight_id) VALUES('" + 
+		reservation.seat_num + "'," + to_string(reservation.user_id) + ", " + to_string(reservation.flight_id) + ");";
+	cout  << "------> sql command: " << sqlSave << endl;
+	sqlCommand(sqlSave);
+}
+
+void Database::cancelReservation(int reservationId)
+{
+	string sqlRemove = "DELETE FROM RESERVATION WHERE reserve_id='" + to_string(reservationId)  + "';";
+	sqlCommand(sqlRemove);
+}
+
+void Database::sqlCommand( string sqlQuery)
+{
+	int rc;
+	char *error;
+	sqlite3 *db = Database::openDb();
+	const char *sqlQueryStr = sqlQuery.c_str();
+	rc = sqlite3_exec(db, sqlQueryStr, NULL, NULL, &error);
+   if( rc != SQLITE_OK ) {
+		fprintf(stderr, "SQL error: %s\n", error);
+		sqlite3_free(error);
+	} else {
+		fprintf(stdout, "SQL command executed successfully\n");
+	}
+   Database::closeDb(db);
 }
 
 Database::~Database(void)

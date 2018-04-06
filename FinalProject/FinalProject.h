@@ -1,8 +1,14 @@
+
 #pragma once
 
 #include <iostream>
+#include <string>
+
+#include "Flight.h"
 
 const int MAX_LEN = 30;
+
+using namespace std;
 
 struct dateTime {
 	unsigned int year;
@@ -33,14 +39,3 @@ struct BoardingPass {
 	char grade[2];
 	char seatNumber[4];
 };
-
-//struct Flight {
-//	char fromCity[4];
-//	char toCity[4];
-//	char flightNumber[5];
-//	dateTime departTime;
-//	dateTime landingTime;
-//	int totalSeatNumber;
-//	double fare;
-//	char planeModel[8];
-//};
