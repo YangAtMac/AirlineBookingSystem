@@ -1,15 +1,23 @@
 #pragma once
 #include "sqlite3.h"
+#include <string>
+
+//#include "FinalProject.h"
+#include "Reservation.h"
 
 class Database
 {
 public:
 	Database(void);
-	sqlite3 *openDb();
-	int initDB();
-	int insertFlight();
+	static sqlite3 *openDb();
+	static int initDB();
+	static int insertFlight();
 	void getFlights();
-	void closeDb(sqlite3 *db);
+	static void closeDb(sqlite3 *db);
+	void sqlCommand( std::string sqlQuery);
+	void saveReservation( Reservation reservation);
+	void cancelReservation( int id);
+	void debug();
 	~Database(void);
 };
 
