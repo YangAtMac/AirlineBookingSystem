@@ -2,6 +2,7 @@
 #include <iostream>
 #include "Database.h"
 #include <string>
+#include "sha256.h"
 
 
 using namespace std;
@@ -43,6 +44,14 @@ int Database::initDB()
  
 	// Execute SQL
 	cout << "Creating USERS Table ..." << endl;
+	const char *sqlDropUserTable = "DROP TABLE IF EXISTS USERS;";
+	rc = sqlite3_exec(db, sqlDropUserTable, NULL, NULL, &error);
+	if (rc)
+	{
+		cerr << "Error executing SQLite3 statement: " << sqlite3_errmsg(db) << endl << endl;
+		sqlite3_free(error);
+	}
+
 	const char *sqlCreateUserTable = "CREATE TABLE IF NOT EXISTS USERS (id INTEGER PRIMARY KEY, username STRING, hashed_password STRING, role STRING);";
 	rc = sqlite3_exec(db, sqlCreateUserTable, NULL, NULL, &error);
 	if (rc)
@@ -56,6 +65,13 @@ int Database::initDB()
 	}
 
 	cout << "Creating FLIGHTS ..." << endl;
+	const char *sqlDropFlightTable = "DROP TABLE IF EXISTS FLIGHTS;";
+	rc = sqlite3_exec(db, sqlDropFlightTable, NULL, NULL, &error);
+	if (rc)
+	{
+		cerr << "Error executing SQLite3 statement: " << sqlite3_errmsg(db) << endl << endl;
+		sqlite3_free(error);
+	}
 	const char *sqlCreateFlightsTable = "CREATE TABLE IF NOT EXISTS FLIGHTS ( "
 		"id INTEGER PRIMARY KEY NOT NULL, depart_city STRING, destination STRING, flight_no STRING,"
 		"depart_time DATETIME, arrival_time DATETIME, total_seat SMALLINT, fare DOUBLE, plane_model STRING);";
@@ -71,6 +87,13 @@ int Database::initDB()
 	}
 
 	cout << "Creating FLIGHT_USER ..." << endl;
+	const char *sqlDropFlightUserTable = "DROP TABLE IF EXISTS FLIGHT_USER;";
+	rc = sqlite3_exec(db, sqlDropFlightUserTable, NULL, NULL, &error);
+	if (rc)
+	{
+		cerr << "Error executing SQLite3 statement: " << sqlite3_errmsg(db) << endl << endl;
+		sqlite3_free(error);
+	}
 	const char *sqlCreateFlightUserTable = "CREATE TABLE IF NOT EXISTS FLIGHT_USER (id INTEGER PRIMARY KEY, seat_no STRING, user_id INTEGER, flight_id INTEGER);";
 	rc = sqlite3_exec(db, sqlCreateFlightUserTable, NULL, NULL, &error);
 	if (rc)
@@ -83,9 +106,11 @@ int Database::initDB()
 		cout << "Created FLIGHT_USER." << endl << endl;
 	}
 
-	cout << "Inserting a value into MyTable ..." << endl;
-	const char *sqlInsert = "INSERT INTO Users (username, hashed_password, role) VALUES('Bob', 'somepassword', 'user');";
-	rc = sqlite3_exec(db, sqlInsert, NULL, NULL, &error);
+	cout << "Inserting a value into User ..." << endl;
+	string hashed_password = sha256("password");
+	string sql = "INSERT INTO Users (username, hashed_password, role) VALUES('bob', '" + hashed_password + "', 'user');";
+	const char *cstr = sql.c_str();
+	rc = sqlite3_exec(db, cstr, NULL, NULL, &error);
 	if (rc)
 	{
 		cerr << "Error executing SQLite3 statement: " << sqlite3_errmsg(db) << endl << endl;
@@ -93,7 +118,7 @@ int Database::initDB()
 	}
 	else
 	{
-		cout << "Inserted a value into MyTable." << endl << endl;
+		cout << "Inserted a value into User." << endl << endl;
 	}
 	closeDb(db);
 	return 1;

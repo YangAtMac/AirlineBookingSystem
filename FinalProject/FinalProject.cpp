@@ -22,16 +22,23 @@ void cancalUserFlight(int userId);
 void cancalFlight(void);
 void printFlights(vector<Flight> flights);
 void printReservation(vector<UserReservation> uReservation);
+bool login(User &user);
 
 Database db;
 
 int _tmain(int argc, _TCHAR* argv[])
 {
+	Database::initDB();
+	Database::insertFlight();
+	User user;
+	bool authenticated = login(user);
+
+	cin.ignore();
+	cin.get();
+
 	int choic;
-	//Database::initDB();
-	//Database::insertFlight();
 	
-	while (true) {
+	while (authenticated) {
 		system("CLS");
 		printMenu();
 		cin >> choic;
@@ -56,16 +63,14 @@ int _tmain(int argc, _TCHAR* argv[])
 				db.debug();
 				break;
 			case 9:
+			default: 
 				exit(0);
 		}
 		system("PAUSE");
 	}
 
-	//vector<User> users = User::All();
-	// cout << users[0].GetId() << endl;
-	//vector<Flight> flights = Flight::All();
-
 	cout << "Please press any key to exit the program ..." << endl;
+	cin.ignore();
 	cin.get();
 
 	return 0;
@@ -216,5 +221,28 @@ void printReservation(vector<UserReservation> uReservations)
 		}
 	} else {
 		cout << "\nNo data found." << endl;
+	}
+}
+
+bool login(User &user)
+{
+	string username;
+	string password;
+	cout << "Please enter your username: ";
+	cin >> username;
+	user = User::FindByUsername(username);
+	if(username.compare(user.GetUsername()) != 0)
+	{
+		cout << "User not found." << endl;
+		return false;
+	}
+	cout << "Please enter your password: ";
+	cin >> password;
+
+	user.SetPassword(password);
+	bool authenticated = user.Authenticate();
+	if(!authenticated)
+	{
+		cout << "Password is not correct." << endl;
 	}
 }

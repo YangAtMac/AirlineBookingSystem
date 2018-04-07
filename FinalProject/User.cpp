@@ -2,6 +2,7 @@
 #include "User.h"
 #include "Flight.h"
 #include <iostream>
+#include "sha256.h"
 
 using namespace std;
 
@@ -27,7 +28,6 @@ User::User(string u, string p, string r)
 {
 	username = u;
 	password = p;
-	hashed_password = p;
 	role = r;
 }
 
@@ -37,7 +37,7 @@ User::~User(void)
 
 User User::Find(int id)
 {
-	string sql = "SELECT * from Users WHERE id=" + to_string(id) + ";";
+	string sql = "SELECT * from USERS WHERE id=" + to_string(id) + ";";
 	vector<User> users = Select(sql);
 	if(users.size() == 0)
 	{
@@ -47,9 +47,24 @@ User User::Find(int id)
 	User user = User(users[0].GetId(), users[0].GetUsername(), users[0].GetHashedPassword(), users[0].GetRole());
 	return user;
 };
+
+User User::FindByUsername(string username)
+{
+	string sql = "SELECT * from USERS WHERE username='" + username + "';";
+	vector<User> users = Select(sql);
+	cout << users[0].GetUsername();
+	if(users.size() == 0)
+	{
+		User user;
+		return user;
+	}
+	User user = User(users[0].GetId(), users[0].GetUsername(), users[0].GetHashedPassword(), users[0].GetRole());
+	return user;
+}
+
 std::vector<User> User::All()
 {
-	string sql = "SELECT * from Users;";
+	string sql = "SELECT * from USERS;";
 	std::vector<User> users = Select(sql);
 	return users;
 };
@@ -58,7 +73,7 @@ void User::Create()
 	int rc;
 	char *error;
 	sqlite3 *db = Database::openDb();
-	string sql = "INSERT INTO Users (username, hashed_password, role) VALUES('" + username + "', '" + hashed_password + "', '" + role + "');";
+	string sql = "INSERT INTO USERS (username, hashed_password, role) VALUES('" + username + "', '" + sha256(password) + "', '" + role + "');";
 	const char *sqlInsert = sql.c_str();
 	rc = sqlite3_exec(db, sqlInsert, NULL, NULL, &error);
    if( rc != SQLITE_OK ) {
@@ -68,7 +83,7 @@ void User::Create()
 	} else {
 		fprintf(stdout, "User created successfully\n");
 		Database::closeDb(db);
-		string sql = "SELECT * from Users WHERE username='" + username + "';";
+		string sql = "SELECT * from USERS WHERE username='" + username + "';";
 		vector<User> users = Select(sql);
 		id = users[0].id;
 	}
@@ -78,7 +93,7 @@ void User::Update()
 	int rc;
 	char *error;
 	sqlite3 *db = Database::openDb();
-	string sql = "UPDATE Users SET username='" + username +  "', hashed_password='" + hashed_password +  "', role='" + role +  "';";
+	string sql = "UPDATE USERS SET username='" + username +  "', hashed_password='" + hashed_password +  "', role='" + role +  "';";
 	const char *sqlUpdate = sql.c_str();
 	rc = sqlite3_exec(db, sqlUpdate, NULL, NULL, &error);
    if( rc != SQLITE_OK ) {
@@ -95,7 +110,7 @@ void User::Delete()
 	int rc;
 	char *error;
 	sqlite3 *db = Database::openDb();
-	string sql = "DELETE FROM Users WHERE id=" + to_string(id) + ";";
+	string sql = "DELETE FROM USERS WHERE id=" + to_string(id) + ";";
 	const char *sqlUpdate = sql.c_str();
 	rc = sqlite3_exec(db, sqlUpdate, NULL, NULL, &error);
    if( rc != SQLITE_OK ) {
@@ -316,7 +331,12 @@ void User::SetRole(string r)
 };
 bool User::Authenticate()
 {
-	return true;
+	if(hashed_password.compare(sha256(password)) == 0)
+	{
+		return true;
+	} else {
+		return false;
+	}
 };
 
 static int selectCallback(void *ptr, int count, char **data, char **columns){
@@ -336,7 +356,7 @@ static int selectCallback(void *ptr, int count, char **data, char **columns){
 		{
 			username = data[i];
 		} else if(colName == "hashed_password") {
-			hashed_password == data[i];
+			hashed_password = data[i];
 		} else if(colName == "role")
 		{
 			role = data[i];
@@ -354,7 +374,6 @@ static int selectCallback(void *ptr, int count, char **data, char **columns){
 vector<User> Select(string sql)
 {
 	vector<User> users;
-	cout << sql << endl;
 	sqlite3 *db = Database::openDb();
 	char *zErrMsg = 0;
 	int rc;
