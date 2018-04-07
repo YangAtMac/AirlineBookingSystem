@@ -379,15 +379,22 @@ vector<User> Select(string sql)
 	}
 }
 
-void User::reserveFlight(int flight_id, int user_id,  string seatNumber)
+void User::reserveFlight(Flight flight, int user_id,  string seatNumber)
 {
 	Database db;
 	Reservation reservation;
-	reservation.flight_id = flight_id;
+	reservation.flight_id = flight.GetId();
 	reservation.seat_num = seatNumber;
 	reservation.user_id = user_id;
-	//reserveSeat();
+	reserveSeat(flight);
 	db.saveReservation(reservation);
+};
+
+void User::reserveFlight(UserReservation *uReserve)
+{
+	Database db;
+	reserveSeat(uReserve);
+	db.saveReservation(uReserve);
 };
 
 void User::cancelFlight(int reservationId)
@@ -396,12 +403,29 @@ void User::cancelFlight(int reservationId)
 	db.cancelReservation(reservationId);
 };
 
+void User::reserveSeat(UserReservation *uReservation)
+{
+	char answer;
+	bool resSeat;
+	do {
+		cout << endl << "Do you want to reserve your seat? [y/n]: ";
+		cin >> answer;
+	} while( !cin.fail() && toupper(answer) != 'Y' && toupper(answer) != 'N' );
+	resSeat = (toupper(answer)=='Y') ? true : false;
+	if (resSeat) {
+		vector<Seat> seats = uReservation->flight->getAllSeats();
+ 		showSeatMap(uReservation, seats);
+		reserveSeat(uReservation, seats);
+	}
+}
+
+
 void User::reserveSeat(Flight f)
 {
 	char answer;
 	bool resSeat;
 	do {
-		cout << endl << "Do you want to reserve your seat? [y/n]";
+		cout << endl << "Do you want to reserve your seat? [y/n]: ";
 		cin >> answer;
 	} while( !cin.fail() && toupper(answer) != 'Y' && toupper(answer) != 'N' );
 	resSeat = (toupper(answer)=='Y') ? true : false;
@@ -415,6 +439,10 @@ void User::reserveSeat(Flight f)
 vector<Seat> User::reserveSeat(Flight f, vector<Seat> seats)
 {
 	string userAnswer;
+	if (seats.size() == 0) {
+		cerr << "There is no seat available." <<endl;
+		return seats;
+	}
 	do {
 		cout << "Please enter the seat number: ";
 		cin >> userAnswer;
@@ -430,6 +458,29 @@ vector<Seat> User::reserveSeat(Flight f, vector<Seat> seats)
 	return seats;
 }
 
+vector<Seat> User::reserveSeat(UserReservation *uR, vector<Seat> seats)
+{
+	string userAnswer;
+	if (seats.size() == 0) {
+		cerr << "There is no seat available." <<endl;
+		return seats;
+	}
+	do {
+		cout << "Please enter the seat number: ";
+		cin >> userAnswer;
+	} while (!isSeatValid(userAnswer, seats));
+	//TODO reserve seat
+	for ( vector<Seat>::iterator it = seats.begin(); it != seats.end(); ++it ){
+		if ( userAnswer == it->getSeatNumber() ) {
+			it->reserve();
+			uR->seat_num = userAnswer;
+		} 
+	}
+	cout << "Your seat is reserved successfully. display again." << endl;
+	showSeatMap(uR, seats);
+	return seats;
+}
+
 bool isSeatValid(string seatNum, vector<Seat> seats)
 {
 	bool isValid = false;
@@ -437,7 +488,7 @@ bool isSeatValid(string seatNum, vector<Seat> seats)
 	for ( vector<Seat>::iterator it = seats.begin(); it != seats.end(); ++it ){
 		if ( seatNum == it->getSeatNumber() ) {
 			isValid = true;
-			// return index would be better.
+			break;
 		} 
 	}
 	if (!isValid)
@@ -452,7 +503,26 @@ void User::showSeatMap(Flight f, vector<Seat> seats )
     cout << "*********     Welcome to seat reservation system     *********\n\n";
 
 	for ( vector<Seat>::iterator it = seats.begin(); it != seats.end(); ++it ) {
-		cout << " ";
+		cout << "\t";
+		if (it->isSeatAvailable()) {
+			cout << it->getSeatNumber() << "\t";
+		} else {
+			cout << "X\t";
+		}
+		if ( it->seatCol == 'G') {
+			cout << endl;
+		}
+	}
+}
+
+void User::showSeatMap(UserReservation *uR, vector<Seat> seats )
+{ 
+    //system( "cls" );
+	cout << "Total seats: " << uR->flight->GetTotalSeat() << endl;;
+    cout << "*********     Welcome to seat reservation system     *********\n\n";
+
+	for ( vector<Seat>::iterator it = seats.begin(); it != seats.end(); ++it ) {
+		cout << "\t";
 		if (it->isSeatAvailable()) {
 			cout << it->getSeatNumber() << "\t";
 		} else {

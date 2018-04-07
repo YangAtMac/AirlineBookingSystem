@@ -5,6 +5,7 @@
 vector<Flight> Select(string sql);
 static int selectCallback(void *ptr, int count, char **data, char **columns);
 static int userSelectCallback(void *ptr, int count, char **data, char **columns);
+vector<Flight *> Display(string sql);
 
 Flight::Flight(int i, string dc, string d, string fn,
 		string dt, string at, int ts, double f, string pm)
@@ -19,7 +20,7 @@ Flight::Flight(int i, string dc, string d, string fn,
 	fare = f;
 	plane_model = pm;
 	MAX_SEAT_PER_ROW = 7;
-	getAllSeats();
+	//getAllSeats();
 };
 Flight::Flight(string dc, string d, string fn,
 		string dt, string at, int ts, double f, string pm)
@@ -33,12 +34,12 @@ Flight::Flight(string dc, string d, string fn,
 	fare = f;
 	plane_model = pm;
 	MAX_SEAT_PER_ROW = 7;
-	getAllSeats();
+	//getAllSeats();
 };
 Flight::Flight(void)
 {
 	MAX_SEAT_PER_ROW = 7;
-	getAllSeats();
+	//getAllSeats();
 }
 
 
@@ -58,10 +59,18 @@ Flight Flight::Find(int id)
 	Flight flight = Flight();
 	return flight;
 };
+
 std::vector<Flight> Flight::All()
 {
 	string sql = "SELECT * from Flights;";
 	std::vector<Flight> flights = Select(sql);
+	return flights;
+};
+
+std::vector<Flight *> Flight::getAllFlights()
+{
+	string sql = "SELECT * from Flights;";
+	std::vector<Flight *> flights = Display(sql);
 	return flights;
 };
 
@@ -176,6 +185,71 @@ static int selectCallback(void *ptr, int count, char **data, char **columns)
 	return 0;
 }
 
+static int displayCb(void *ptr, int count, char **data, char **columns)
+{
+	if(count == 0)
+	{
+		return 0;
+	}
+
+	std::vector<Flight *>* flights = static_cast<std::vector<Flight *>*>(ptr);
+
+	int id;
+	string depart_city;
+	string destination;
+	string flight_no;
+	string depart_time;
+	string arrival_time;
+	int total_seat;
+	double fare;
+	string plane_model;
+	for(int i = 0; i<count; i++){
+		string colName(columns[i]);
+
+		if(colName == "depart_city")
+		{
+			depart_city = data[i];
+		} else if(colName == "destination") {
+			destination = data[i];
+		} else if(colName == "flight_no")
+		{
+			flight_no = data[i];
+		} else if(colName == "depart_time")
+		{
+			depart_time = data[i];
+		} else if(colName == "plane_model")
+		{
+			plane_model = data[i];
+		} else if(colName == "arrival_time")
+		{
+			arrival_time = data[i];
+		} else if(colName == "total_seat")
+		{
+			total_seat = atoi(data[i]);
+		} else if(colName == "fare")
+		{
+			fare = atof(data[i]);
+		} else if(colName == "id")
+		{
+			id = atoi(data[i]);
+		}
+	}
+
+	Flight *flight;
+	flight = new Flight();
+	flight->SetId(id);
+	flight->SetDepartCity(depart_city);
+	flight->SetDestination(destination);
+	flight->SetFlightNo(flight_no);
+	flight->SetDepartTime(depart_time);
+	flight->SetArrivalTime(arrival_time);
+	flight->SetTotalSeat(total_seat);
+	flight->SetFare(fare);
+	flight->SetPlaneModel(plane_model);
+	flights->push_back(flight);
+	return 0;
+}
+
 vector<Flight> Select(string sql)
 {
 	vector<Flight> flights;
@@ -190,6 +264,33 @@ vector<Flight> Select(string sql)
 
 	/* Execute SQL statement */
 	rc = sqlite3_exec(db, cstr, selectCallback, &flights, &zErrMsg);
+
+	if( rc != SQLITE_OK ) {
+		fprintf(stderr, "SQL error: %s\n", zErrMsg);
+		sqlite3_free(zErrMsg);
+		Database::closeDb(db);
+		return flights;
+	} else {
+		fprintf(stdout, "Operation done successfully\n");
+		Database::closeDb(db);
+		return flights;
+	}
+}
+
+vector<Flight *> Display(string sql)
+{
+	vector<Flight *> flights;
+	sqlite3 *db = Database::openDb();
+	char *zErrMsg = 0;
+	int rc;
+	const char* data = "Callback function called";
+	User user;
+
+	int n = sql.length();
+	const char *cstr = sql.c_str();
+
+	/* Execute SQL statement */
+	rc = sqlite3_exec(db, cstr, displayCb, &flights, &zErrMsg);
 
 	if( rc != SQLITE_OK ) {
 		fprintf(stderr, "SQL error: %s\n", zErrMsg);
@@ -327,12 +428,11 @@ vector<Seat>Flight::getAllSeats()
 	vector<Seat>allSeats;
 	Seat seat;
 	char col[8] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', '\0'};
-	for (int i = 1; i < Flight::total_seat/MAX_SEAT_PER_ROW; i++) {
+	for (int i = 1; i < (GetTotalSeat() / MAX_SEAT_PER_ROW); i++) {
 		for (int x = 0; x < MAX_SEAT_PER_ROW; x++) {
 			Seat seat(i, col[x]);
 			allSeats.push_back(seat);
 		}
-		cout << endl;
 	}
 	return allSeats;
 }
