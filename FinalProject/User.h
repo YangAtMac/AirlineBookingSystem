@@ -42,13 +42,16 @@ public:
 	std::string GetRole();
 	void SetRole(std::string r);
 	bool Authenticate();
-	void reserveFlight(int flight_id, int user_id,  string seat_num);
+	void reserveFlight(Flight flight, int user_id,  string seat_num);
+	void reserveFlight(UserReservation *uReserve);
 	void cancelFlight(int flight_id);
-	void reserveFlight();
 	void reserveSeat(Flight f);
+	void reserveSeat(UserReservation *uReservation);
 	
 	vector<UserReservation> GetUserReservation(int userId);
 	vector<Seat> reserveSeat(Flight f, vector<Seat> seats);
+	vector<Seat> reserveSeat(UserReservation *uR, vector<Seat> seats);
 	void showSeatMap( Flight f, vector<Seat> seats );
+	void showSeatMap(UserReservation *uR, vector<Seat> seats);
 };
 

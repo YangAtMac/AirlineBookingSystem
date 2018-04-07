@@ -36,6 +36,7 @@ public:
 	void SetId( int Id){id = Id;};
 	static Flight Find(int id);
 	static std::vector<Flight> All();
+	std::vector<Flight *> Flight::getAllFlights();
 	void Create();
 	void Update();
 	void Delete();
@@ -54,7 +55,7 @@ public:
 	Flight getFlight(int id);
 	int GetTotalSeat();
 	void SetTotalSeat(int i) {total_seat = i;};
-	void SetFare(int i) {fare = i;};
+	void SetFare(double i) {fare = i;};
 	void SetPlaneModel(std::string model) { plane_model = model; };
 	double GetFare();
 	std::string GetPlaneModel();
