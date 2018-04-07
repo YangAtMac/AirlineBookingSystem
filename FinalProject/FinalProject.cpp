@@ -23,13 +23,13 @@ void cancalFlight(void);
 void printFlights(vector<Flight *> flights);
 void printReservation(vector<UserReservation> uReservation);
 bool login(User &user);
+void initDB();
 
 Database db;
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	Database::initDB();
-	Database::insertFlight();
+	initDB();
 	User user;
 	bool authenticated = login(user);
 	int userId = user.GetId();
@@ -255,4 +255,15 @@ bool login(User &user)
 		cout << "Password is not correct." << endl;
 	}
 	return authenticated;
+}
+
+void initDB(){
+	char choice = 'n';
+	cout << "Would you like to initialize the database? (y/n): ";
+	cin >> choice;
+	if(choice == 'y')
+	{
+		Database::initDB();
+		Database::insertFlight();
+	}
 }
