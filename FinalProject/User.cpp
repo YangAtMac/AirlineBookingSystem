@@ -73,7 +73,7 @@ void User::Create()
 	int rc;
 	char *error;
 	sqlite3 *db = Database::openDb();
-	string sql = "INSERT INTO Users (username, hashed_password, role) VALUES('" + username + "', '" + hashed_password + "', '" + role + "');";
+	string sql = "INSERT INTO Users (username, hashed_password, role) VALUES('" + username + "', '" + sha256(password) + "', '" + role + "');";
 	const char *sqlInsert = sql.c_str();
 	rc = sqlite3_exec(db, sqlInsert, NULL, NULL, &error);
    if( rc != SQLITE_OK ) {
