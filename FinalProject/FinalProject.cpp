@@ -20,7 +20,7 @@ void displayUserReservation(int userId);
 void displayReservation(void);
 void cancalUserFlight(int userId);
 void cancalFlight(void);
-void printFlights(vector<Flight> flights);
+void printFlights(vector<Flight *> flights);
 void printReservation(vector<UserReservation> uReservation);
 
 Database db;
@@ -28,6 +28,7 @@ Database db;
 int _tmain(int argc, _TCHAR* argv[])
 {
 	int choic;
+	Flight f;
 	//Database::initDB();
 	//Database::insertFlight();
 	
@@ -46,7 +47,7 @@ int _tmain(int argc, _TCHAR* argv[])
 				cancalFlight();
 				break;
 			case 4: 
-				printFlights(Flight::All());
+				printFlights(f.getAllFlights());
 				break;
 			case 6:
 				cout << "construction.....";
@@ -60,10 +61,6 @@ int _tmain(int argc, _TCHAR* argv[])
 		}
 		system("PAUSE");
 	}
-
-	//vector<User> users = User::All();
-	// cout << users[0].GetId() << endl;
-	//vector<Flight> flights = Flight::All();
 
 	cout << "Please press any key to exit the program ..." << endl;
 	cin.get();
@@ -86,16 +83,30 @@ void printMenu(void)
 
 void reserveFlight(void)
 {
-	User passenger = User::Find(2);
+	unsigned int userId = -1;
 	Flight f;
-	printFlights(Flight::All());
+	UserReservation *uR;
+	int flight_id;
+	uR = new UserReservation();
+	do{
+		cout << "Please enter your USER ID: ";
+		cin >> userId;
+	}while(userId < 0); // TODO: validate if User ID is exists
+	User passenger = User::Find(userId);
+	uR->userId = userId;
+	vector<Flight*> flights = f.getAllFlights();
+	printFlights(flights);
 
 	cout << "Enter the flight id to reserve: ";
-	int flight_id;
+	
 	cin >> flight_id;
-	//f = f.getFlight(flight_id);
-	passenger.reserveFlight(flight_id, 2, "11B");
-//	passenger.reserveSeat(f);
+	for (Flight *flight : flights) {
+		if(flight->GetId() == flight_id) {
+			uR->flight = flight;
+			break;
+		}
+	}
+	passenger.reserveFlight(uR);
 }
 
 void cancalFlight()
@@ -163,29 +174,28 @@ void displayUserReservation(int userId)
 	printReservation(uReservations);
 }
 
-void printFlights(vector<Flight> flights)
+void printFlights(vector<Flight *> flights)
 {
 	if (flights.size() > 0) {
-	cout << setw(5) << right << "ID";
-	cout << setw(16) << right << "Depart City";
-	cout << setw(16) << right << "Destination";
-	cout << setw(14) << right << "Flight No";
-	cout << setw(16) << right << "Depart Time";
-	cout << setw(17) << right << "Arrival Time";
-	cout << setw(14) << right << "Num Seats";
-	cout << setw(8) << right << "Fare";
-	cout << setw(6) << right << "Plane" << endl;
-	for(Flight flight : flights)
-	{
-		cout << setw(3) << right << "[" << flight.GetId() << "]";
-		cout << setw(16) << right << flight.GetDepartCity();
-		cout << setw(16) << right << flight.GetDestination();
-		cout << setw(14) << right << flight.GetFlightNo();
-		cout << setw(16) << right << flight.GetDepartTime();
-		cout << setw(17) << right << flight.GetArrivalTime();
-		cout << setw(14) << right << flight.GetTotalSeat();
-		cout << setw(8) << right << flight.GetFare();
-		cout << setw(6) << right << flight.GetPlaneModel() << endl;
+		cout << setw(5) << right << "ID";
+		cout << setw(16) << right << "Depart City";
+		cout << setw(16) << right << "Destination";
+		cout << setw(14) << right << "Flight No";
+		cout << setw(16) << right << "Depart Time";
+		cout << setw(17) << right << "Arrival Time";
+		cout << setw(14) << right << "Num Seats";
+		cout << setw(8) << right << "Fare";
+		cout << setw(6) << right << "Plane" << endl;
+		for (Flight * flight : flights) {
+			cout << setw(3) << right << "[" << flight->GetId() << "]";
+			cout << setw(16) << right << flight->GetDepartCity();
+			cout << setw(16) << right << flight->GetDestination();
+			cout << setw(14) << right << flight->GetFlightNo();
+			cout << setw(16) << right << flight->GetDepartTime();
+			cout << setw(17) << right << flight->GetArrivalTime();
+			cout << setw(14) << right << flight->GetTotalSeat();
+			cout << setw(8) << right << flight->GetFare();
+			cout << setw(6) << right << flight->GetPlaneModel() << endl;
 		}
 	} else {
 		cout << "\nNo data found." << endl;
@@ -217,4 +227,9 @@ void printReservation(vector<UserReservation> uReservations)
 	} else {
 		cout << "\nNo data found." << endl;
 	}
+}
+
+void viewSeatMap()
+{
+
 }

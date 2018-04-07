@@ -93,6 +93,7 @@
     <ClCompile Include="Database.cpp" />
     <ClCompile Include="FinalProject.cpp" />
     <ClCompile Include="Flight.cpp" />
+    <ClCompile Include="Reservation.cpp" />
     <ClCompile Include="Seat.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

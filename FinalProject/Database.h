@@ -16,6 +16,7 @@ public:
 	static void closeDb(sqlite3 *db);
 	void sqlCommand( std::string sqlQuery);
 	void saveReservation( Reservation reservation);
+	void saveReservation( UserReservation *uReservation);
 	void cancelReservation( int id);
 	void debug();
 	~Database(void);
