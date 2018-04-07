@@ -15,38 +15,43 @@
 using namespace std;
 
 void printMenu(void);
-void reserveFlight(void);
+void reserveFlight(int userId);
 void displayUserReservation(int userId);
 void displayReservation(void);
 void cancalUserFlight(int userId);
 void cancalFlight(void);
 void printFlights(vector<Flight *> flights);
 void printReservation(vector<UserReservation> uReservation);
+bool login(User &user);
 
 Database db;
 
 int _tmain(int argc, _TCHAR* argv[])
 {
+	Database::initDB();
+	Database::insertFlight();
+	User user;
+	bool authenticated = login(user);
+	int userId = user.GetId();
+
 	int choic;
 	Flight f;
-	//Database::initDB();
-	//Database::insertFlight();
-	
-	while (true) {
+
+	while (authenticated) {
 		system("CLS");
 		printMenu();
 		cin >> choic;
 		switch(choic){
 			case 1:
-				displayReservation();
+				displayUserReservation(userId);
 				break;
 			case 2:
-				reserveFlight();
+				reserveFlight(userId);
 				break;
 			case 3:
-				cancalFlight();
+				cancalUserFlight(userId);
 				break;
-			case 4: 
+			case 4:
 				printFlights(f.getAllFlights());
 				break;
 			case 6:
@@ -61,6 +66,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 
 	cout << "Please press any key to exit the program ..." << endl;
+	cin.ignore();
 	cin.get();
 
 	return 0;
@@ -79,24 +85,19 @@ void printMenu(void)
 	cout << "Please select option: ";
 }
 
-void reserveFlight(void)
+void reserveFlight(int userId)
 {
-	unsigned int userId = -1;
 	Flight f;
 	UserReservation *uR;
 	int flight_id;
 	uR = new UserReservation();
-	do{
-		cout << "Please enter your USER ID: ";
-		cin >> userId;
-	}while(userId < 0); // TODO: validate if User ID is exists
 	User passenger = User::Find(userId);
 	uR->userId = userId;
 	vector<Flight*> flights = f.getAllFlights();
 	printFlights(flights);
 
 	cout << "Enter the flight id to reserve: ";
-	
+
 	cin >> flight_id;
 	for (Flight *flight : flights) {
 		if(flight->GetId() == flight_id) {
@@ -230,4 +231,28 @@ void printReservation(vector<UserReservation> uReservations)
 void viewSeatMap()
 {
 
+}
+
+bool login(User &user)
+{
+	string username;
+	string password;
+	cout << "Please enter your username: ";
+	cin >> username;
+	user = User::FindByUsername(username);
+	if(username.compare(user.GetUsername()) != 0)
+	{
+		cout << "User not found." << endl;
+		return false;
+	}
+	cout << "Please enter your password: ";
+	cin >> password;
+
+	user.SetPassword(password);
+	bool authenticated = user.Authenticate();
+	if(!authenticated)
+	{
+		cout << "Password is not correct." << endl;
+	}
+	return authenticated;
 }

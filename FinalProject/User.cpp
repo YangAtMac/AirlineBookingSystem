@@ -2,6 +2,7 @@
 #include "User.h"
 #include "Flight.h"
 #include <iostream>
+#include "sha256.h"
 
 using namespace std;
 
@@ -47,6 +48,20 @@ User User::Find(int id)
 	User user = User(users[0].GetId(), users[0].GetUsername(), users[0].GetHashedPassword(), users[0].GetRole());
 	return user;
 };
+
+User User::FindByUsername(string username)
+{
+	string sql = "SELECT * from USERS WHERE username='" + username + "';";
+	vector<User> users = Select(sql);
+	if(users.size() == 0)
+	{
+		User user;
+		return user;
+	}
+	User user = User(users[0].GetId(), users[0].GetUsername(), users[0].GetHashedPassword(), users[0].GetRole());
+	return user;
+}
+
 std::vector<User> User::All()
 {
 	string sql = "SELECT * from Users;";
@@ -266,10 +281,10 @@ static int userFlightSelectCb(void *ptr, int count, char **data, char **columns)
 			total_seat = atoi(data[i]);
 		} else if(colName == "fare") {
 			fare = atof(data[i]);
-		} 
+		}
 	}
 
-	
+
 	//Flight flight(id, depart_city, destination, flight_no, depart_time, arrival_time, total_seat, fare, plane_model);
 	Flight *flight = new Flight();
 	flight->SetId(id);
@@ -316,7 +331,12 @@ void User::SetRole(string r)
 };
 bool User::Authenticate()
 {
-	return true;
+	if(hashed_password.compare(sha256(password)) == 0)
+	{
+		return true;
+	} else {
+		return false;
+	}
 };
 
 static int selectCallback(void *ptr, int count, char **data, char **columns){
@@ -336,7 +356,7 @@ static int selectCallback(void *ptr, int count, char **data, char **columns){
 		{
 			username = data[i];
 		} else if(colName == "hashed_password") {
-			hashed_password == data[i];
+			hashed_password = data[i];
 		} else if(colName == "role")
 		{
 			role = data[i];
@@ -354,7 +374,6 @@ static int selectCallback(void *ptr, int count, char **data, char **columns){
 vector<User> Select(string sql)
 {
 	vector<User> users;
-	cout << sql << endl;
 	sqlite3 *db = Database::openDb();
 	char *zErrMsg = 0;
 	int rc;
@@ -451,7 +470,7 @@ vector<Seat> User::reserveSeat(Flight f, vector<Seat> seats)
 	for ( vector<Seat>::iterator it = seats.begin(); it != seats.end(); ++it ){
 		if ( userAnswer == it->getSeatNumber() ) {
 			it->reserve();
-		} 
+		}
 	}
 	cout << "Your seat is reserved successfully. display again." << endl;
 	showSeatMap(f, seats);
@@ -474,7 +493,7 @@ vector<Seat> User::reserveSeat(UserReservation *uR, vector<Seat> seats)
 		if ( userAnswer == it->getSeatNumber() ) {
 			it->reserve();
 			uR->seat_num = userAnswer;
-		} 
+		}
 	}
 	cout << "Your seat is reserved successfully. display again." << endl;
 	showSeatMap(uR, seats);
@@ -489,7 +508,7 @@ bool isSeatValid(string seatNum, vector<Seat> seats)
 		if ( seatNum == it->getSeatNumber() ) {
 			isValid = true;
 			break;
-		} 
+		}
 	}
 	if (!isValid)
 			cout << "Your entry is invalid, please try again." <<endl;
@@ -497,7 +516,7 @@ bool isSeatValid(string seatNum, vector<Seat> seats)
 }
 
 void User::showSeatMap(Flight f, vector<Seat> seats )
-{ 
+{
     //system( "cls" );
 	cout << "Total seats: " << f.GetTotalSeat() << endl;;
     cout << "*********     Welcome to seat reservation system     *********\n\n";
@@ -516,7 +535,7 @@ void User::showSeatMap(Flight f, vector<Seat> seats )
 }
 
 void User::showSeatMap(UserReservation *uR, vector<Seat> seats )
-{ 
+{
     //system( "cls" );
 	cout << "Total seats: " << uR->flight->GetTotalSeat() << endl;;
     cout << "*********     Welcome to seat reservation system     *********\n\n";

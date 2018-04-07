@@ -30,6 +30,7 @@ public:
 	User(std::string u, std::string p, std::string r);
 	~User(void);
 	static User Find(int id);
+	static User User::FindByUsername(string username);
 	static std::vector<User> All();
 	void Create();
 	void Update();
@@ -47,7 +48,7 @@ public:
 	void cancelFlight(int flight_id);
 	void reserveSeat(Flight f);
 	void reserveSeat(UserReservation *uReservation);
-	
+
 	vector<UserReservation> GetUserReservation(int userId);
 	vector<Seat> reserveSeat(Flight f, vector<Seat> seats);
 	vector<Seat> reserveSeat(UserReservation *uR, vector<Seat> seats);
