@@ -199,7 +199,7 @@ void Database::saveReservation( Reservation reservation)
 	
 	string sqlSave = "INSERT INTO RESERVATION (seat_no, user_id, flight_id) VALUES('" + 
 		reservation.seat_num + "'," + to_string(reservation.user_id) + ", " + to_string(reservation.flight_id) + ");";
-	cout  << "------> sql command: " << sqlSave << endl;
+	// cout  << "------> sql command: " << sqlSave << endl;
 	sqlCommand(sqlSave);
 }
 
