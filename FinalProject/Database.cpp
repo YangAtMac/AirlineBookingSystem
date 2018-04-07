@@ -183,32 +183,32 @@ void Database::getFlights()
 }
 
 /* this is debug function to modify DB*/
-void Database::debug()
-{
-	string sqlDebug = "INSERT INTO RESERVATION (seat_no, user_id, flight_id) VALUES('12B', 2, 12)";
-	/*
-	string sqlDebug  = "ALTER TABLE FLIGHT_USER RENAME TO RESERVATION";
-	string sqlDebug  = "ALTER TABLE FLIGHT_USER RENAME TO RESERVATION";
-	*/
-	sqlCommand(sqlDebug);
-}
+//void Database::debug()
+//{
+//	string sqlDebug = "INSERT INTO RESERVATION (seat_no, user_id, flight_id) VALUES('12B', 2, 12)";
+//	/*
+//	string sqlDebug  = "ALTER TABLE FLIGHT_USER RENAME TO RESERVATION";
+//	string sqlDebug  = "ALTER TABLE FLIGHT_USER RENAME TO RESERVATION";
+//	*/
+//	sqlCommand(sqlDebug);
+//}
 
 
-void Database::saveReservation( Reservation reservation)
-{
-	
-	string sqlSave = "INSERT INTO RESERVATION (seat_no, user_id, flight_id) VALUES('" + 
-		reservation.seat_num + "'," + to_string(reservation.user_id) + ", " + to_string(reservation.flight_id) + ");";
-	cout  << "------> sql command: " << sqlSave << endl;
-	sqlCommand(sqlSave);
-}
+//void Database::saveReservation( Reservation reservation)
+//{
+//	
+//	string sqlSave = "INSERT INTO RESERVATION (seat_no, user_id, flight_id) VALUES('" + 
+//		reservation.seat_num + "'," + to_string(reservation.user_id) + ", " + to_string(reservation.flight_id) + ");";
+//	cout  << "------> sql command: " << sqlSave << endl;
+//	sqlCommand(sqlSave);
+//}
 
 void Database::saveReservation( UserReservation *uReservation)
 {
 	
 	string sqlSave = "INSERT INTO RESERVATION (seat_no, user_id, flight_id) VALUES('" + 
 		uReservation->seat_num + "'," + to_string(uReservation->userId) + ", " + to_string(uReservation->flight->GetId()) + ");";
-	cout  << "------> sql command: " << sqlSave << endl;
+	//cout  << "------> sql command: " << sqlSave << endl;
 	sqlCommand(sqlSave);
 }
 

@@ -50,11 +50,9 @@ int _tmain(int argc, _TCHAR* argv[])
 				printFlights(f.getAllFlights());
 				break;
 			case 6:
-				cout << "construction.....";
-				//flights.getFlights();
 				break;
 			case 7:
-				db.debug();
+				//db.debug();
 				break;
 			case 9:
 				exit(0);

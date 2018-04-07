@@ -379,16 +379,16 @@ vector<User> Select(string sql)
 	}
 }
 
-void User::reserveFlight(Flight flight, int user_id,  string seatNumber)
-{
-	Database db;
-	Reservation reservation;
-	reservation.flight_id = flight.GetId();
-	reservation.seat_num = seatNumber;
-	reservation.user_id = user_id;
-	reserveSeat(flight);
-	db.saveReservation(reservation);
-};
+//void User::reserveFlight(Flight flight, int user_id,  string seatNumber)
+//{
+//	Database db;
+//	Reservation reservation;
+//	reservation.flight_id = flight.GetId();
+//	reservation.seat_num = seatNumber;
+//	reservation.user_id = user_id;
+//	reserveSeat(flight);
+//	db.saveReservation(reservation);
+//};
 
 void User::reserveFlight(UserReservation *uReserve)
 {
