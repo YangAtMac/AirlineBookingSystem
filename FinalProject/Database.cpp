@@ -2,13 +2,14 @@
 #include <iostream>
 #include "Database.h"
 #include <string>
+#include "sha256.h"
 
 
 using namespace std;
 
 Database::Database(void)
 {
-	
+
 }
 
 sqlite3* Database::openDb()
@@ -35,14 +36,22 @@ void Database::closeDb(sqlite3 *db)
 	sqlite3_close(db);
 }
 
-int Database::initDB() 
+int Database::initDB()
 {
 	int rc;
 	char *error;
 	sqlite3 *db = openDb();
- 
+
 	// Execute SQL
 	cout << "Creating USERS Table ..." << endl;
+	const char *sqlDropUserTable = "DROP TABLE IF EXISTS USERS;";
+	rc = sqlite3_exec(db, sqlDropUserTable, NULL, NULL, &error);
+	if (rc)
+	{
+		cerr << "Error executing SQLite3 statement: " << sqlite3_errmsg(db) << endl << endl;
+		sqlite3_free(error);
+	}
+
 	const char *sqlCreateUserTable = "CREATE TABLE IF NOT EXISTS USERS (id INTEGER PRIMARY KEY, username STRING, hashed_password STRING, role STRING);";
 	rc = sqlite3_exec(db, sqlCreateUserTable, NULL, NULL, &error);
 	if (rc)
@@ -56,6 +65,13 @@ int Database::initDB()
 	}
 
 	cout << "Creating FLIGHTS ..." << endl;
+	const char *sqlDropFlightTable = "DROP TABLE IF EXISTS FLIGHTS;";
+	rc = sqlite3_exec(db, sqlDropFlightTable, NULL, NULL, &error);
+	if (rc)
+	{
+		cerr << "Error executing SQLite3 statement: " << sqlite3_errmsg(db) << endl << endl;
+		sqlite3_free(error);
+	}
 	const char *sqlCreateFlightsTable = "CREATE TABLE IF NOT EXISTS FLIGHTS ( "
 		"id INTEGER PRIMARY KEY NOT NULL, depart_city STRING, destination STRING, flight_no STRING,"
 		"depart_time DATETIME, arrival_time DATETIME, total_seat SMALLINT, fare DOUBLE, plane_model STRING);";
@@ -71,6 +87,13 @@ int Database::initDB()
 	}
 
 	cout << "Creating FLIGHT_USER ..." << endl;
+	const char *sqlDropFlightUserTable = "DROP TABLE IF EXISTS FLIGHT_USER;";
+	rc = sqlite3_exec(db, sqlDropFlightUserTable, NULL, NULL, &error);
+	if (rc)
+	{
+		cerr << "Error executing SQLite3 statement: " << sqlite3_errmsg(db) << endl << endl;
+		sqlite3_free(error);
+	}
 	const char *sqlCreateFlightUserTable = "CREATE TABLE IF NOT EXISTS FLIGHT_USER (id INTEGER PRIMARY KEY, seat_no STRING, user_id INTEGER, flight_id INTEGER);";
 	rc = sqlite3_exec(db, sqlCreateFlightUserTable, NULL, NULL, &error);
 	if (rc)
@@ -83,9 +106,11 @@ int Database::initDB()
 		cout << "Created FLIGHT_USER." << endl << endl;
 	}
 
-	cout << "Inserting a value into MyTable ..." << endl;
-	const char *sqlInsert = "INSERT INTO Users (username, hashed_password, role) VALUES('Bob', 'somepassword', 'user');";
-	rc = sqlite3_exec(db, sqlInsert, NULL, NULL, &error);
+	cout << "Inserting a value into User ..." << endl;
+	string hashed_password = sha256("password");
+	string sql = "INSERT INTO Users (username, hashed_password, role) VALUES('bob', '" + hashed_password + "', 'user');";
+	const char *cstr = sql.c_str();
+	rc = sqlite3_exec(db, cstr, NULL, NULL, &error);
 	if (rc)
 	{
 		cerr << "Error executing SQLite3 statement: " << sqlite3_errmsg(db) << endl << endl;
@@ -93,7 +118,7 @@ int Database::initDB()
 	}
 	else
 	{
-		cout << "Inserted a value into MyTable." << endl << endl;
+		cout << "Inserted a value into User." << endl << endl;
 	}
 	closeDb(db);
 	return 1;
@@ -146,12 +171,12 @@ int Database::insertFlight()
 
 void Database::getFlights()
 {
-    sqlite3_stmt *statement;    
+    sqlite3_stmt *statement;
 	sqlite3 *db = openDb();
 
     char *query = "select * from FLIGHTS";
 
-    if ( sqlite3_prepare(db, query, -1, &statement, 0 ) == SQLITE_OK ) 
+    if ( sqlite3_prepare(db, query, -1, &statement, 0 ) == SQLITE_OK )
     {
         int ctotal = sqlite3_column_count(statement);
         int res = 0;
@@ -159,25 +184,25 @@ void Database::getFlights()
         while ( true )
         {
             res = sqlite3_step(statement);
-            if ( res == SQLITE_ROW ) 
+            if ( res == SQLITE_ROW )
             {
 				int id;
                 id = sqlite3_column_int(statement, 0);
 				cout << id << ": ";
-				for ( int i = 1; i < ctotal; i++ ) 
+				for ( int i = 1; i < ctotal; i++ )
                 {
                     string s = (char*)sqlite3_column_text(statement, i);
-                    // print or format the output as you want 
+                    // print or format the output as you want
                     cout << s << " " ;
                 }
                 cout << endl;
             }
 
-            if ( res == SQLITE_DONE || res==SQLITE_ERROR)    
+            if ( res == SQLITE_DONE || res==SQLITE_ERROR)
             {
                 cout << "done " << endl;
                 break;
-            }    
+            }
         }
     }
 }
@@ -196,8 +221,8 @@ void Database::getFlights()
 
 //void Database::saveReservation( Reservation reservation)
 //{
-//	
-//	string sqlSave = "INSERT INTO RESERVATION (seat_no, user_id, flight_id) VALUES('" + 
+//
+//	string sqlSave = "INSERT INTO RESERVATION (seat_no, user_id, flight_id) VALUES('" +
 //		reservation.seat_num + "'," + to_string(reservation.user_id) + ", " + to_string(reservation.flight_id) + ");";
 //	cout  << "------> sql command: " << sqlSave << endl;
 //	sqlCommand(sqlSave);
@@ -205,8 +230,8 @@ void Database::getFlights()
 
 void Database::saveReservation( UserReservation *uReservation)
 {
-	
-	string sqlSave = "INSERT INTO RESERVATION (seat_no, user_id, flight_id) VALUES('" + 
+
+	string sqlSave = "INSERT INTO RESERVATION (seat_no, user_id, flight_id) VALUES('" +
 		uReservation->seat_num + "'," + to_string(uReservation->userId) + ", " + to_string(uReservation->flight->GetId()) + ");";
 	//cout  << "------> sql command: " << sqlSave << endl;
 	sqlCommand(sqlSave);
