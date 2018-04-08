@@ -41,8 +41,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\Eric\Documents\Visual Studio 2012\Projects\AirlineBookingSystem\Curl stuff\Include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Eric\Documents\Visual Studio 2012\Projects\AirlineBookingSystem\Curl stuff\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\Curl stuff\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\Curl stuff\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
