@@ -54,5 +54,6 @@ public:
 	vector<Seat> reserveSeat(UserReservation *uR, vector<Seat> seats);
 	void showSeatMap( Flight f, vector<Seat> seats );
 	void showSeatMap(UserReservation *uR, vector<Seat> seats);
+	void dispalyUserSeat(UserReservation uRservation);
 };
 

@@ -62,6 +62,8 @@ int _tmain(int argc, _TCHAR* argv[])
 			case 9:
 				exit(0);
 		}
+		cin.clear();
+		cin.ignore();
 		system("PAUSE");
 	}
 
@@ -170,7 +172,30 @@ void displayUserReservation(int userId)
 	User user = User::Find(userId);
 	vector<UserReservation> uReservations;
 	uReservations = user.GetUserReservation(userId);
-	printReservation(uReservations);
+	int resId;
+	do {
+		system("CLS");
+		printReservation(uReservations);
+		cout << "Enter 'q' back to main meun " << endl;
+		cout << "Enter reservation ID to show seat map: " ;
+		cin.clear();
+		cin >> resId;
+		if (cin.fail()){
+			cout << "\nInput incorrect ID back to main menu." << endl;
+			break;
+		} else if ( isValidId(uReservations, resId)){
+			for ( UserReservation r : uReservations) {
+				if ( r.reserve_id == resId) {
+					user.dispalyUserSeat(r);
+					break;
+				} 
+			} 
+		} else {
+			cout << endl << "No matched reservation found!" << endl;
+		}
+		system("PAUSE");
+	} while ( !cin.fail() );
+
 }
 
 void printFlights(vector<Flight *> flights)
