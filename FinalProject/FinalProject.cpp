@@ -15,6 +15,7 @@
 using namespace std;
 
 void printMenu(void);
+void printUserMenu(void);
 void reserveFlight(int userId);
 void displayUserReservation(int userId);
 void displayReservation(void);
@@ -22,7 +23,9 @@ void cancalUserFlight(int userId);
 void cancalFlight(void);
 void printFlights(vector<Flight *> flights);
 void printReservation(vector<UserReservation> uReservation);
+bool loginOrCreate(User &user);
 bool login(User &user);
+bool createAccount(User &user);
 void initDB();
 
 Database db;
@@ -31,7 +34,7 @@ int _tmain(int argc, _TCHAR* argv[])
 {
 	initDB();
 	User user;
-	bool authenticated = login(user);
+	bool authenticated = loginOrCreate(user);
 	int userId = user.GetId();
 
 	int choic;
@@ -80,6 +83,17 @@ void printMenu(void)
 	cout << "2. Reserve your flight." << endl;
 	cout << "3. Cancel your flights." << endl;
 	cout << "4. Display all flights." << endl;
+	cout << "9. Exit." << endl;
+	cout << endl;
+	cout << "Please select option: ";
+}
+
+void printUserMenu(void)
+{
+	cout << "\tUSER MENU\n" << endl;
+	cout << endl;
+	cout << "1. Login." << endl;
+	cout << "2. Create account." << endl;
 	cout << "9. Exit." << endl;
 	cout << endl;
 	cout << "Please select option: ";
@@ -233,6 +247,24 @@ void viewSeatMap()
 
 }
 
+bool loginOrCreate(User &user)
+{
+	int choice = 0;
+	system("CLS");
+	printUserMenu();
+	cin >> choice;
+	switch(choice){
+			case 1:
+				return login(user);
+				break;
+			case 2:
+				return createAccount(user);
+				break;
+			case 9:
+				exit(0);
+		}
+}
+
 bool login(User &user)
 {
 	string username;
@@ -255,6 +287,20 @@ bool login(User &user)
 		cout << "Password is not correct." << endl;
 	}
 	return authenticated;
+}
+
+bool createAccount(User &user)
+{
+	string username;
+	string password;
+	string role = "user";
+	cout << "Please enter your username: ";
+	cin >> username;
+	cout << "Please enter your password: ";
+	cin >> password;
+	user = User(username, password, role);
+	user.Create();
+	return true;
 }
 
 void initDB(){
