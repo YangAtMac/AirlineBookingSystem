@@ -3,6 +3,7 @@
 #include <iostream>
 #include "sqlite3.h"
 #include <string>
+#include <conio.h>
 
 #include "FinalProject.h"
 #include "Flight.h"
@@ -32,7 +33,7 @@ Database db;
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	initDB();
+
 	User user;
 	bool authenticated = loginOrCreate(user);
 	int userId = user.GetId();
@@ -96,6 +97,7 @@ void printUserMenu(void)
 	cout << endl;
 	cout << "1. Login." << endl;
 	cout << "2. Create account." << endl;
+	cout << "3. Initialize database." << endl;
 	cout << "9. Exit." << endl;
 	cout << endl;
 	cout << "Please select option: ";
@@ -285,6 +287,9 @@ bool loginOrCreate(User &user)
 			case 2:
 				return createAccount(user);
 				break;
+			case 3:
+				initDB();
+				break;
 			case 9:
 				exit(0);
 		}
@@ -294,6 +299,7 @@ bool login(User &user)
 {
 	string username;
 	string password;
+	bool authenticated;
 	cout << "Please enter your username: ";
 	cin >> username;
 	user = User::FindByUsername(username);
@@ -302,15 +308,40 @@ bool login(User &user)
 		cout << "User not found." << endl;
 		return false;
 	}
-	cout << "Please enter your password: ";
-	cin >> password;
+	int count = 0;
+	do{
+		int ch;
+		cout << "Please enter your password: ";
+		/*cin >> password;*/
+		while ( ch = _getch()){
+			if ( ch == 13){
+				break;
+			} else if (ch == 8) {
+				if (password.length() > 0){
+					cout << "\b \b";
+					password.erase( password.length() - 1);
+				}
+			} else {
+				cout << "*";
+				password += ch;
+			}
+		}
 
-	user.SetPassword(password);
-	bool authenticated = user.Authenticate();
-	if(!authenticated)
-	{
-		cout << "Password is not correct." << endl;
-	}
+		user.SetPassword(password);
+		authenticated = user.Authenticate();
+		password = "";
+		count++;
+		if (count == 5){
+			cout << "Too many attemption, exit."<<endl;
+			system("PAUSE");
+			exit(0);
+		}
+		if(!authenticated)
+		{
+			cout << "tried " << count <<", password is not correct." << endl;
+		}
+	} while (!authenticated);
+	return authenticated;
 	return authenticated;
 }
 
@@ -322,7 +353,20 @@ bool createAccount(User &user)
 	cout << "Please enter your username: ";
 	cin >> username;
 	cout << "Please enter your password: ";
-	cin >> password;
+	int ch;
+	while ( ch = _getch()){
+		if ( ch == 13){
+			break;
+		} else if (ch == 8) {
+			if (password.length() > 0){
+					cout << "\b \b";
+					password.erase( password.length() - 1);
+			}
+		} else {
+			cout << "*";
+			password += ch;
+		}
+	}
 	user = User(username, password, role);
 	user.Create();
 	return true;
@@ -330,11 +374,16 @@ bool createAccount(User &user)
 
 void initDB(){
 	char choice = 'n';
+	cout<< "\nWARNING: This will delete all exist data in database, you will have to "
+		"recrate user/password and reservation" << endl;
 	cout << "Would you like to initialize the database? (y/n): ";
 	cin >> choice;
 	if(choice == 'y')
 	{
 		Database::initDB();
 		Database::insertFlight();
+	} else {
+		exit(0);
 	}
+
 }
