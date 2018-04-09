@@ -62,7 +62,8 @@ int _tmain(int argc, _TCHAR* argv[])
 			case 9:
 				exit(0);
 		}
-		
+		cin.clear();
+		cin.ignore();
 		system("PAUSE");
 	}
 	cout << "Please press any key to exit the program ..." << endl;
