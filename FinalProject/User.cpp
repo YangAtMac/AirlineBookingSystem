@@ -47,7 +47,7 @@ User User::Find(int id)
 	}
 	User user = User(users[0].GetId(), users[0].GetUsername(), users[0].GetHashedPassword(), users[0].GetRole());
 	return user;
-};
+}
 
 User User::FindByUsername(string username)
 {
@@ -67,7 +67,8 @@ std::vector<User> User::All()
 	string sql = "SELECT * from Users;";
 	std::vector<User> users = Select(sql);
 	return users;
-};
+}
+
 void User::Create()
 {
 	int rc;
@@ -87,7 +88,8 @@ void User::Create()
 		vector<User> users = Select(sql);
 		id = users[0].id;
 	}
-};
+}
+
 void User::Update()
 {
 	int rc;
@@ -104,7 +106,8 @@ void User::Update()
 		fprintf(stdout, "User updated successfully\n");
 		Database::closeDb(db);
 	}
-};
+}
+
 void User::Delete()
 {
 	int rc;
@@ -121,7 +124,7 @@ void User::Delete()
 		fprintf(stdout, "User updated successfully\n");
 		Database::closeDb(db);
 	}
-};
+}
 
 vector<Flight> User::GetFlights()
 {
@@ -147,7 +150,7 @@ vector<Flight> User::GetFlights()
 		Database::closeDb(db);
 		return flights;
 	}
-};
+}
 
 vector<UserReservation>  User::GetUserReservation(int userId)
 {
@@ -157,8 +160,6 @@ vector<UserReservation>  User::GetUserReservation(int userId)
 	int rc;
 
 	string sql = "SELECT * FROM RESERVATION fu INNER JOIN FLIGHTS f ON f.id = fu.flight_id WHERE fu.user_id = '" + to_string(userId) + "';";
-	//string sql = "SELECT fu.id, fu.seat_no, user_id, user.username, user.role, f.depart_city, destination, depart_time, arrival_time, flight_id, flight_no" \
-	//			"FROM FLIGHT_USER fu INNER JOIN FLIGHTS f ON f.id = fu.flight_id INNER JOIN USERS user ON user.id = fu.user_id WHERE fu.user_id = '" + to_string(userId) + "';";
 
 	int n = sql.length();
 	const char *cstr = sql.c_str();
@@ -174,7 +175,7 @@ vector<UserReservation>  User::GetUserReservation(int userId)
 	}
 	Database::closeDb(db);
 	return userFlights;
-};
+}
 
 static int flightSelectCallback(void *ptr, int count, char **data, char **columns)
 {
@@ -308,27 +309,32 @@ static int userFlightSelectCb(void *ptr, int count, char **data, char **columns)
 int User::GetId()
 {
 	return id;
-};
+}
+
 string User::GetUsername()
 {
 	return username;
 }
+
 string User::GetHashedPassword()
 {
 	return hashed_password;
 }
+
 void User::SetPassword(string p)
 {
 	password = p;
-};
+}
+
 std::string User::GetRole()
 {
 	return role;
-};
+}
 void User::SetRole(string r)
 {
 	role = r;
-};
+}
+
 bool User::Authenticate()
 {
 	if(hashed_password.compare(sha256(password)) == 0)
@@ -337,7 +343,7 @@ bool User::Authenticate()
 	} else {
 		return false;
 	}
-};
+}
 
 static int selectCallback(void *ptr, int count, char **data, char **columns){
 	if(count == 0)
@@ -407,20 +413,20 @@ vector<User> Select(string sql)
 //	reservation.user_id = user_id;
 //	reserveSeat(flight);
 //	db.saveReservation(reservation);
-//};
+//}
 
 void User::reserveFlight(UserReservation *uReserve)
 {
 	Database db;
 	reserveSeat(uReserve);
 	db.saveReservation(uReserve);
-};
+}
 
 void User::cancelFlight(int reservationId)
 {
 	Database db;
 	db.cancelReservation(reservationId);
-};
+}
 
 void User::reserveSeat(UserReservation *uReservation)
 {
@@ -433,49 +439,50 @@ void User::reserveSeat(UserReservation *uReservation)
 	resSeat = (toupper(answer)=='Y') ? true : false;
 	if (resSeat) {
 		vector<Seat> seats = uReservation->flight->getAllSeats();
- 		showSeatMap(uReservation, seats);
+		cout << "Seat map of flight: [" << uReservation->flight->GetId() << "]" << endl <<endl;
+		uReservation->flight->showSeatMap(seats);
 		reserveSeat(uReservation, seats);
 	}
 }
 
 
-void User::reserveSeat(Flight f)
-{
-	char answer;
-	bool resSeat;
-	do {
-		cout << endl << "Do you want to reserve your seat? [y/n]: ";
-		cin >> answer;
-	} while( !cin.fail() && toupper(answer) != 'Y' && toupper(answer) != 'N' );
-	resSeat = (toupper(answer)=='Y') ? true : false;
-	if (resSeat) {
-		vector<Seat> seats = f.getAllSeats();
- 		showSeatMap(f, seats);
-		reserveSeat(f, seats);
-	}
-}
+// void User::reserveSeat(Flight f)
+// {
+	// char answer;
+	// bool resSeat;
+	// do {
+		// cout << endl << "Do you want to reserve your seat? [y/n]: ";
+		// cin >> answer;
+	// } while( !cin.fail() && toupper(answer) != 'Y' && toupper(answer) != 'N' );
+	// resSeat = (toupper(answer)=='Y') ? true : false;
+	// if (resSeat) {
+		// vector<Seat> seats = f.getAllSeats();
+ 		// showSeatMap(f, seats);
+		// reserveSeat(f, seats);
+	// }
+// }
 
-vector<Seat> User::reserveSeat(Flight f, vector<Seat> seats)
-{
-	string userAnswer;
-	if (seats.size() == 0) {
-		cerr << "There is no seat available." <<endl;
-		return seats;
-	}
-	do {
-		cout << "Please enter the seat number: ";
-		cin >> userAnswer;
-	} while (!isSeatValid(userAnswer, seats));
-	//TODO reserve seat
-	for ( vector<Seat>::iterator it = seats.begin(); it != seats.end(); ++it ){
-		if ( userAnswer == it->getSeatNumber() ) {
-			it->reserve();
-		}
-	}
-	cout << "Your seat is reserved successfully. display again." << endl;
-	showSeatMap(f, seats);
-	return seats;
-}
+// vector<Seat> User::reserveSeat(Flight f, vector<Seat> seats)
+// {
+	// string userAnswer;
+	// if (seats.size() == 0) {
+		// cerr << "There is no seat available." <<endl;
+		// return seats;
+	// }
+	// do {
+		// cout << "Please enter the seat number: ";
+		// cin >> userAnswer;
+	// } while (!isSeatValid(userAnswer, seats));
+	// //TODO reserve seat
+	// for ( vector<Seat>::iterator it = seats.begin(); it != seats.end(); ++it ){
+		// if ( userAnswer == it->getSeatNumber() ) {
+			// it->reserve();
+		// }
+	// }
+	// cout << "Your seat is reserved successfully. display again." << endl;
+	// showSeatMap(f, seats);
+	// return seats;
+// }
 
 vector<Seat> User::reserveSeat(UserReservation *uR, vector<Seat> seats)
 {
@@ -485,7 +492,7 @@ vector<Seat> User::reserveSeat(UserReservation *uR, vector<Seat> seats)
 		return seats;
 	}
 	do {
-		cout << "Please enter the seat number: ";
+		cout << "\nPlease enter the seat number: ";
 		cin >> userAnswer;
 	} while (!isSeatValid(userAnswer, seats));
 	//TODO reserve seat
@@ -496,7 +503,7 @@ vector<Seat> User::reserveSeat(UserReservation *uR, vector<Seat> seats)
 		}
 	}
 	cout << "Your seat is reserved successfully. display again." << endl;
-	showSeatMap(uR, seats);
+	uR->flight->showSeatMap(uR->flight->getAllSeats());
 	return seats;
 }
 
@@ -511,28 +518,40 @@ bool isSeatValid(string seatNum, vector<Seat> seats)
 		}
 	}
 	if (!isValid)
-			cout << "Your entry is invalid, please try again." <<endl;
+			cout << "\nYour entry is invalid, please try again." <<endl;
 	return isValid;
 }
 
-void User::showSeatMap(Flight f, vector<Seat> seats )
-{
-    //system( "cls" );
-	cout << "Total seats: " << f.GetTotalSeat() << endl;;
-    cout << "*********     Welcome to seat reservation system     *********\n\n";
+// void User::showSeatMap(Flight f, vector<Seat> seats )
+// {
+    // //system( "cls" );
+	// cout << "Total seats: " << f.GetTotalSeat() << endl;;
+    // cout << "*********     Welcome to seat reservation system     *********\n\n";
 
-	for ( vector<Seat>::iterator it = seats.begin(); it != seats.end(); ++it ) {
-		cout << "\t";
-		if (it->isSeatAvailable()) {
-			cout << it->getSeatNumber() << "\t";
-		} else {
-			cout << "X\t";
-		}
-		if ( it->seatCol == 'G') {
-			cout << endl;
-		}
-	}
+	// for ( vector<Seat>::iterator it = seats.begin(); it != seats.end(); ++it ) {
+		// cout << "\t";
+		// if (it->isSeatAvailable()) {
+			// cout << it->getSeatNumber() << "\t";
+		// } else {
+			// cout << "X\t";
+		// }
+		// if ( it->seatCol == 'G') {
+			// cout << endl;
+		// }
+	// }
+// }
+
+void User::dispalyUserSeat(UserReservation uRservation)
+{
+	vector<Seat> seats = uRservation.flight->getAllSeats();
+	//for ( Seat seat : seats) {
+	//	if ( seat.getSeatNumber() == uRservation.seat_num){
+	//	}
+	//}
+	uRservation.flight->showSeatMap(seats);
+	cout << endl << "Your seat number: [" << uRservation.seat_num << "]" << endl;
 }
+
 
 void User::showSeatMap(UserReservation *uR, vector<Seat> seats )
 {

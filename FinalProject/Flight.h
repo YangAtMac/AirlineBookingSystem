@@ -25,6 +25,7 @@ private:
 	double fare;
 	std::string plane_model;
 	int MAX_SEAT_PER_ROW;
+	vector<Seat> seats;
 
 public:
 	Flight(void);
@@ -59,5 +60,7 @@ public:
 	void SetPlaneModel(std::string model) { plane_model = model; };
 	double GetFare();
 	std::string GetPlaneModel();
-	std::vector<Seat> getAllSeats();
+	vector<Seat> getAllSeats();
+	vector<Seat> Flight::GetFlightSeat(Flight flight);
+	void showSeatMap(vector<Seat> seats );
 };
