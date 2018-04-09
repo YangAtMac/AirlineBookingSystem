@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include <ios>
-#include <iostream>
+#include <iostream>	
 #include "sqlite3.h"
 #include <string>
 #include <conio.h>
@@ -69,7 +69,6 @@ int _tmain(int argc, _TCHAR* argv[])
 		cin.ignore();
 		system("PAUSE");
 	}
-
 	cout << "Please press any key to exit the program ..." << endl;
 	cin.ignore();
 	cin.get();

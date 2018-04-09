@@ -83,6 +83,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CurlFunctions.h" />
     <ClInclude Include="Database.h" />
     <ClInclude Include="FinalProject.h" />
     <ClInclude Include="Flight.h" />
@@ -94,6 +95,7 @@
     <ClInclude Include="User.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CurlFunctions.cpp" />
     <ClCompile Include="Database.cpp" />
     <ClCompile Include="FinalProject.cpp" />
     <ClCompile Include="Flight.cpp" />
