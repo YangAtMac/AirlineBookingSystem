@@ -21,7 +21,6 @@ void reserveFlight(int userId);
 void displayUserReservation(int userId);
 void displayReservation(void);
 void cancalUserFlight(int userId);
-void cancalFlight(void);
 void printFlights(vector<Flight *> flights);
 void printReservation(vector<UserReservation> uReservation);
 bool loginOrCreate(User &user);
@@ -114,7 +113,7 @@ void reserveFlight(int userId)
 	vector<Flight*> flights = f.getAllFlights();
 	printFlights(flights);
 
-	cout << "Enter the flight id to reserve: ";
+	cout << "\nEnter the flight id to reserve: ";
 
 	cin >> flight_id;
 	for (Flight *flight : flights) {
@@ -124,18 +123,6 @@ void reserveFlight(int userId)
 		}
 	}
 	passenger.reserveFlight(uR);
-}
-
-void cancalFlight()
-{
-	unsigned int userId;
-	do{
-		cout << "Please enter your USER ID to login: ";
-		//cout << "Please enter your password: ";
-		cin >> userId;
-	}while(userId < 0); // validate if it's exists
-
-	cancalUserFlight(userId);
 }
 
 bool isValidId(vector<Flight> flights, int id)
@@ -171,16 +158,6 @@ void cancalUserFlight(int userId)
 		cin >> selectId;
 	}while(!isValidId(uReservations, selectId));
 	db.cancelReservation(selectId);
-}
-
-void displayReservation(void)
-{
-	unsigned int userId;
-	do{
-		cout << "Please enter your USER ID: ";
-		cin >> userId;
-	}while(userId < 0); // TODO: validate if User ID is exists
-	displayUserReservation(userId);
 }
 
 void displayUserReservation(int userId)
@@ -300,19 +277,19 @@ bool login(User &user)
 	string username;
 	string password;
 	bool authenticated;
-	cout << "Please enter your username: ";
-	cin >> username;
-	user = User::FindByUsername(username);
+	
+	/*user = User::FindByUsername(username);
 	if(username.compare(user.GetUsername()) != 0)
 	{
 		cout << "User not found." << endl;
 		return false;
-	}
+	}*/
 	int count = 0;
 	do{
 		int ch;
+		cout << "Please enter your username: ";
+		cin >> username;
 		cout << "Please enter your password: ";
-		/*cin >> password;*/
 		while ( ch = _getch()){
 			if ( ch == 13){
 				break;
@@ -326,19 +303,19 @@ bool login(User &user)
 				password += ch;
 			}
 		}
-
+		user = User::FindByUsername(username);
 		user.SetPassword(password);
 		authenticated = user.Authenticate();
 		password = "";
 		count++;
 		if (count == 5){
-			cout << "Too many attemption, exit."<<endl;
+			cout << "\nToo many attemption, exit."<<endl;
 			system("PAUSE");
 			exit(0);
 		}
 		if(!authenticated)
 		{
-			cout << "tried " << count <<", password is not correct." << endl;
+			cout << "\nTried " << count <<", Username or password is not correct." << endl;
 		}
 	} while (!authenticated);
 	return authenticated;
